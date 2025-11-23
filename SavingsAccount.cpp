@@ -9,7 +9,7 @@ SavingsAccount::SavingsAccount(const std::string& ownerId, double initialBalance
     );
 }
 
-double SavingsAccount::getInterestRate() const {
+double SavingsAccount::getInterestRate() const { 
     return interestRate_;
 }
 

@@ -31,7 +31,7 @@ bool CheckingAccount::withdraw(double amount, const std::string& description) {
         );
         return false;
     }
-
+ 
     balance_ -= amount;
     addTransaction(Transaction::Type::WITHDRAWAL, amount, description);
     

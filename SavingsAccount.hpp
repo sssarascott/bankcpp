@@ -14,7 +14,7 @@ public:
     void performMonthlyMaintenance() override;
 
 private:
-    double interestRate_; // e.g., 0.01 for 1%
+    double interestRate_; // e.g., 0.01 for 1% 
 };
 
 #endif // SAVINGSACCOUNT_HPP

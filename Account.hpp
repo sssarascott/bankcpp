@@ -18,7 +18,7 @@ public:
     const std::string& getOwnerId() const;
     const std::vector<Transaction>& getTransactionHistory() const;
 
-    virtual bool deposit(double amount, const std::string& description = "");
+    virtual bool deposit(double amount, const std::string& description = ""); 
     virtual bool withdraw(double amount, const std::string& description = "");
 
     // Pure virtual function for account-specific operations (e.g., interest, overdraft)

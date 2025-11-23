@@ -64,7 +64,7 @@ bool Account::withdraw(double amount, const std::string& description) {
         DataLogEntry::LogLevel::INFO,
         "Withdrew $" + std::to_string(amount) + " from " + accountNumber_ + ". New balance: $" + std::to_string(balance_)
     );
-    return true;
+    return true; 
 }
 
 void Account::addTransaction(Transaction::Type type, double amount, const std::string& description) {

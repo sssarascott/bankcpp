@@ -1,5 +1,10 @@
 #include "Transaction.hpp"
 #include <map> // For mapping enum to string
+#include <chrono> // For timestamp
+#include <ctime>   // For std::time_t
+#include <map>
+#include <iostream>
+#include <iomanip>
 
 // Initialize the static atomic counter
 std::atomic<long long> Transaction::nextId(1001); // Start transaction IDs from 1001
@@ -8,11 +13,11 @@ Transaction::Transaction(Type type, double amount, const std::string& accountNum
     : transactionId_(nextId++), timestamp_(), type_(type), amount_(amount),
       accountNumber_(accountNum), description_(description) {}
 
-long long Transaction::getTransactionId() const {
+long long Transaction::getTransactionId() const { 
     return transactionId_;
 }
 
-Date Transaction::getTimestamp() const {
+std::time_t Transaction::getTimestamp() const {
     return timestamp_;
 }
 

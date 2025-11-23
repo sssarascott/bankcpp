@@ -12,7 +12,7 @@ class Customer {
 public:
     Customer(const std::string& name, const std::string& address, const std::string& phone);
 
-    std::string getCustomerId() const;
+    std::string getCustomerId() const; 
     const std::string& getName() const;
     const std::string& getAddress() const;
     const std::string& getPhone() const;

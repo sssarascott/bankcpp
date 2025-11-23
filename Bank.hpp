@@ -13,7 +13,7 @@ class Bank {
 public:
     Bank(const std::string& name);
 
-    const std::string& getName() const;
+    const std::string& getName() const; 
 
     // Customer Management
     Customer* createCustomer(const std::string& name, const std::string& address, const std::string& phone);

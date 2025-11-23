@@ -1,5 +1,10 @@
 #include "Customer.hpp"
 #include "DataManager.hpp" // For logging
+#include <chrono> // For timestamp
+#include <ctime>   // For std::time_t
+#include <map>
+#include <iomanip>
+#include <iostream>
 
 // Initialize the static atomic counter
 std::atomic<long long> Customer::nextCustomerId(10000); // Start customer IDs from 10000
@@ -47,7 +52,7 @@ void Customer::addAccount(std::unique_ptr<Account> account) {
 }
 
 const std::vector<std::unique_ptr<Account>>& Customer::getAccounts() const {
-    return accounts_;
+    return accounts_; 
 }
 
 Account* Customer::getAccount(const std::string& accountNumber) const {

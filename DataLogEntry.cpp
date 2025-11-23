@@ -1,5 +1,8 @@
 #include "DataLogEntry.hpp"
 #include <map> // For mapping enum to string
+#include <chrono> // For timestamp
+#include <ctime>   // For std::time_t
+#include <map>
 
 // Initialize the static atomic counter
 std::atomic<long long> DataLogEntry::nextId(1);
@@ -11,8 +14,8 @@ long long DataLogEntry::getEntryId() const {
     return entryId_;
 }
 
-Date DataLogEntry::getTimestamp() const {
-    return timestamp_;
+std::time_t  DataLogEntry::getTimestamp() const {
+    return timestamp_; 
 }
 
 DataLogEntry::LogLevel DataLogEntry::getLevel() const {

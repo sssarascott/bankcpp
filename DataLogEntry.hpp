@@ -1,10 +1,12 @@
 #ifndef DATALOGENTRY_HPP
 #define DATALOGENTRY_HPP
 
-#include "Date.hpp"
 #include <string>
 #include <ostream> // For std::ostream
 #include <atomic>  // For unique ID generation
+#include <chrono> // For timestamp
+#include <ctime>   // For std::time_t
+#include <map>
 
 class DataLogEntry {
 public:
@@ -13,7 +15,7 @@ public:
     DataLogEntry(LogLevel level, const std::string& description);
 
     long long getEntryId() const;
-    Date getTimestamp() const;
+    std::time_t getTimestamp() const;
     LogLevel getLevel() const;
     const std::string& getDescription() const;
 
@@ -23,7 +25,7 @@ public:
 private:
     static std::atomic<long long> nextId; // For unique ID generation
     long long entryId_;
-    Date timestamp_;
+    std::time_t timestamp_;
     LogLevel level_;
     std::string description_;
 };

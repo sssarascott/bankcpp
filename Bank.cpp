@@ -148,7 +148,7 @@ bool Bank::transferFunds(const std::string& fromAccountNum, const std::string& t
             DataLogEntry::LogLevel::WARNING,
             "Transfer failed between " + fromAccountNum + " and " + toAccountNum + " due to withdrawal issue."
         );
-        return false;
+        return false; 
     }
 }
 

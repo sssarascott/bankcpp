@@ -2,7 +2,7 @@
 #define CHECKINGACCOUNT_HPP
 
 #include "Account.hpp"
-
+ 
 class CheckingAccount : public Account {
 public:
     CheckingAccount(const std::string& ownerId, double initialBalance, double overdraftLimit);

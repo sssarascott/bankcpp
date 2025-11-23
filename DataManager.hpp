@@ -4,7 +4,7 @@
 #include "DataLogEntry.hpp"
 #include <vector>
 #include <string>
-#include <mutex> // For thread-safety (Singleton pattern)
+// #include <mutex> // For thread-safety (Singleton pattern)
 
 // DataManager will be a Singleton to ensure consistent logging
 class DataManager {
@@ -23,7 +23,7 @@ private:
     DataManager(); // Private constructor for Singleton pattern
     
     std::vector<DataLogEntry> logs_;
-    mutable std::mutex mtx_; // Protects access to logs_
+    // mutable std::mutex mtx_; // Protects access to logs_
 };
 
 #endif // DATAMANAGER_HPP
