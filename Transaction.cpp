@@ -1,54 +1,72 @@
-#include "Transaction.hpp"
 #include <map> // For mapping enum to string
 #include <chrono> // For timestamp
-#include <ctime>   // For std::time_t
+#include <ctime>   // For time_t
 #include <map>
 #include <iostream>
 #include <iomanip>
+#include <string>
+#include <ostream> // For ostream
+#include <atomic>  // For unique ID generation
+using namespace std;
 
-// Initialize the static atomic counter
-std::atomic<long long> Transaction::nextId(1001); // Start transaction IDs from 1001
+class Transaction {
+public:
+    enum class Type { DEPOSIT, WITHDRAWAL, TRANSFER };
 
-Transaction::Transaction(Type type, double amount, const std::string& accountNum, const std::string& description)
-    : transactionId_(nextId++), timestamp_(), type_(type), amount_(amount),
-      accountNumber_(accountNum), description_(description) {}
+    Transaction(Type type, double amount, const string& accountNum, const string& description="")
+        : transactionId_(nextId++), timestamp_(), type_(type), amount_(amount),
+        accountNumber_(accountNum), description_(description) {}
 
-long long Transaction::getTransactionId() const { 
-    return transactionId_;
-}
+    
+    long getTransactionId() const { 
+        return transactionId_;
+    }
 
-std::time_t Transaction::getTimestamp() const {
-    return timestamp_;
-}
+    time_t getTimestamp() const {
+        return timestamp_;
+    }
 
-Transaction::Type Transaction::getType() const {
-    return type_;
-}
+    Type getType() const {
+        return type_;
+    }
 
-double Transaction::getAmount() const {
-    return amount_;
-}
+    double getAmount() const {
+        return amount_;
+    }
 
-const std::string& Transaction::getAccountNumber() const {
-    return accountNumber_;
-}
+    const string& getAccountNumber() const {
+        return accountNumber_;
+    }
 
-const std::string& Transaction::getDescription() const {
-    return description_;
-}
+    const string& getDescription() const {
+        return description_;
+    }
 
-std::ostream& operator<<(std::ostream& os, const Transaction& transaction) {
-    std::map<Transaction::Type, std::string> typeMap = {
-        {Transaction::Type::DEPOSIT, "DEPOSIT"},
-        {Transaction::Type::WITHDRAWAL, "WITHDRAWAL"},
-        {Transaction::Type::TRANSFER, "TRANSFER"}
-    };
+    // Overload stream insertion operator for easy printing
+    friend ostream& operator<<(ostream& os, const Transaction& transaction) {
+        map<Type, string> typeMap = {
+                {Type::DEPOSIT, "DEPOSIT"},
+                {Type::WITHDRAWAL, "WITHDRAWAL"},
+                {Type::TRANSFER, "TRANSFER"}
+            };
 
-    os << "[TRXID:" << transaction.getTransactionId() << "] "
-       << "[" << transaction.getTimestamp() << "] "
-       << "[" << typeMap[transaction.getType()] << "] "
-       << "Account: " << transaction.getAccountNumber() << ", "
-       << "Amount: $" << std::fixed << std::setprecision(2) << transaction.getAmount() << " "
-       << (transaction.getDescription().empty() ? "" : "(" + transaction.getDescription() + ")");
-    return os;
-}
+            os << "[TRXID:" << transaction.getTransactionId() << "] "
+            << "[" << transaction.getTimestamp() << "] "
+            << "[" << typeMap[transaction.getType()] << "] "
+            << "Account: " << transaction.getAccountNumber() << ", "
+            << "Amount: $" << fixed << setprecision(2) << transaction.getAmount() << " "
+            << (transaction.getDescription().empty() ? "" : "(" + transaction.getDescription() + ")");
+            return os;
+    }
+
+private:
+    static int nextId;
+    long transactionId_;
+    time_t timestamp_;
+    Type type_;
+    double amount_;
+    string accountNumber_; // Account associated with this transaction
+    string description_;
+};
+
+int Transaction::nextId = 1001;

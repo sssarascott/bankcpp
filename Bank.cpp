@@ -1,171 +1,174 @@
-#include "Bank.hpp"
-#include "DataManager.hpp" // For logging
-#include "SavingsAccount.hpp"
-#include "CheckingAccount.hpp"
+#include "DataManager.cpp" // For logging
+#include "SavingsAccount.cpp" // For SavingsAccount
+#include "CheckingAccount.cpp" // For CheckingAccount
+#include "Customer.cpp" // For Customer class
+#include "Account.cpp" // For Account class
 #include <iostream>
+#include <string>
+#include <vector>
+#include <algorithm> // For find_if
+#include <numeric>   // For accumulate
+using namespace std;
 
-Bank::Bank(const std::string& name) : name_(name) {
-    DataManager::getInstance().logEvent(
-        DataLogEntry::LogLevel::INFO,
-        "Bank '" + name_ + "' initialized."
-    );
-}
-
-const std::string& Bank::getName() const {
-    return name_;
-}
-
-// --- Customer Management ---
-
-Customer* Bank::createCustomer(const std::string& name, const std::string& address, const std::string& phone) {
-    auto newCustomer = std::make_unique<Customer>(name, address, phone);
-    Customer* rawPtr = newCustomer.get();
-    customers_.push_back(std::move(newCustomer));
-    DataManager::getInstance().logEvent(
-        DataLogEntry::LogLevel::INFO,
-        "New customer registered: " + rawPtr->getCustomerId() + " (" + rawPtr->getName() + ")"
-    );
-    return rawPtr;
-}
-
-Customer* Bank::getCustomer(const std::string& customerId) const {
-    for (const auto& cust : customers_) {
-        if (cust->getCustomerId() == customerId) {
-            return cust.get();
-        }
-    }
-    return nullptr;
-}
-
-Customer* Bank::getCustomerByName(const std::string& name) const {
-    for (const auto& cust : customers_) {
-        if (cust->getName() == name) {
-            return cust.get();
-        }
-    }
-    return nullptr;
-}
-
-std::vector<Customer*> Bank::getAllCustomers() const {
-    std::vector<Customer*> allCustomers;
-    for (const auto& cust : customers_) {
-        allCustomers.push_back(cust.get());
-    }
-    return allCustomers;
-}
-
-// --- Account Management ---
-
-Account* Bank::createSavingsAccount(const std::string& customerId, double initialBalance, double interestRate) {
-    Customer* customer = getCustomer(customerId);
-    if (!customer) {
-        DataManager::getInstance().logEvent(
-            DataLogEntry::LogLevel::ERROR,
-            "Failed to create SavingsAccount: Customer " + customerId + " not found."
-        );
-        return nullptr;
-    }
-    auto newAccount = std::make_unique<SavingsAccount>(customerId, initialBalance, interestRate);
-    Account* rawPtr = newAccount.get();
-    customer->addAccount(std::move(newAccount));
-    return rawPtr;
-}
-
-Account* Bank::createCheckingAccount(const std::string& customerId, double initialBalance, double overdraftLimit) {
-    Customer* customer = getCustomer(customerId);
-    if (!customer) {
-        DataManager::getInstance().logEvent(
-            DataLogEntry::LogLevel::ERROR,
-            "Failed to create CheckingAccount: Customer " + customerId + " not found."
-        );
-        return nullptr;
-    }
-    auto newAccount = std::make_unique<CheckingAccount>(customerId, initialBalance, overdraftLimit);
-    Account* rawPtr = newAccount.get();
-    customer->addAccount(std::move(newAccount));
-    return rawPtr;
-}
-
-Account* Bank::getAccount(const std::string& accountNumber) const {
-    for (const auto& cust : customers_) {
-        Account* acc = cust->getAccount(accountNumber);
-        if (acc) {
-            return acc;
-        }
-    }
-    return nullptr;
-}
-
-std::vector<Account*> Bank::getAllAccounts() const {
-    std::vector<Account*> allAccounts;
-    for (const auto& cust : customers_) {
-        for (const auto& acc : cust->getAccounts()) {
-            allAccounts.push_back(acc.get());
-        }
-    }
-    return allAccounts;
-}
-
-
-// --- Transaction Processing ---
-
-bool Bank::transferFunds(const std::string& fromAccountNum, const std::string& toAccountNum, double amount, const std::string& description) {
-    if (amount <= 0) {
-        DataManager::getInstance().logEvent(
-            DataLogEntry::LogLevel::WARNING,
-            "Transfer failed: Invalid amount $" + std::to_string(amount)
-        );
-        return false;
-    }
-
-    Account* fromAccount = getAccount(fromAccountNum);
-    Account* toAccount = getAccount(toAccountNum);
-
-    if (!fromAccount) {
-        DataManager::getInstance().logEvent(
-            DataLogEntry::LogLevel::ERROR,
-            "Transfer failed: Source account " + fromAccountNum + " not found."
-        );
-        return false;
-    }
-    if (!toAccount) {
-        DataManager::getInstance().logEvent(
-            DataLogEntry::LogLevel::ERROR,
-            "Transfer failed: Destination account " + toAccountNum + " not found."
-        );
-        return false;
-    }
-
-    if (fromAccount->withdraw(amount, "Transfer to " + toAccountNum + (description.empty() ? "" : ": " + description))) {
-        toAccount->deposit(amount, "Transfer from " + fromAccountNum + (description.empty() ? "" : ": " + description));
+class Bank {
+public:
+    Bank::Bank(const string& name) : name_(name) {
         DataManager::getInstance().logEvent(
             DataLogEntry::LogLevel::INFO,
-            "Successfully transferred $" + std::to_string(amount) + " from " + fromAccountNum + " to " + toAccountNum + (description.empty() ? "" : " (" + description + ")")
+            "Bank '" + name_ + "' initialized."
         );
-        return true;
-    } else {
-        DataManager::getInstance().logEvent(
-            DataLogEntry::LogLevel::WARNING,
-            "Transfer failed between " + fromAccountNum + " and " + toAccountNum + " due to withdrawal issue."
-        );
-        return false; 
     }
-}
 
-// --- System Operations ---
+    const string& Bank::getName() const {
+        return name_;
+    }
 
-void Bank::runMonthlyMaintenance() {
-    DataManager::getInstance().logEvent(
-        DataLogEntry::LogLevel::INFO,
-        "Starting monthly maintenance for all accounts..."
-    );
-    for (auto& cust : customers_) {
-        for (auto& acc : cust->getAccounts()) {
-            acc->performMonthlyMaintenance();
+    // --- Customer Management ---
+    Customer createCustomer(const string& name, const string& address, const string& phone) {
+        const Customer newCustomer = Customer(name, address, phone);
+        customers_.push_back(newCustomer);
+        DataManager::getInstance().logEvent(
+            DataLogEntry::LogLevel::INFO,
+            "New customer registered: " + newCustomer.getCustomerId() + " (" + newCustomer.getName() + ")"
+        );
+        return newCustomer;
+    }
+
+    Customer getCustomer(const string& customerId) const {
+        for (Customer cust : customers_) {
+            if (cust.getCustomerId() == customerId) {
+                return cust;
+            }
+        }
+        return Customer::getInvalidCustomer();
+    }
+
+    Customer getCustomerByName(const string& name) const {
+        for (Customer cust : customers_) {
+            if (cust.getName().compare(name) == 0) {
+                return cust;
+            }
+        }
+        return Customer::getInvalidCustomer();
+    }
+
+    vector<Customer> getAllCustomers() const {
+        return customers_;
+    }
+
+    // --- Account Management ---
+    Account& createSavingsAccount(const string& customerId, double initialBalance, double interestRate) {
+        Customer& customer = getCustomer(customerId);
+        if (customer == Customer::getInvalidCustomer()) {
+            DataManager::getInstance().logEvent(
+                DataLogEntry::LogLevel::ERROR,
+                "Failed to create SavingsAccount: Customer " + customerId + " not found."
+            );
+            throw runtime_error("Customer not found");
+        }
+        Account* newAccount = new SavingsAccount(customerId, initialBalance, interestRate);
+        customer.addAccount (newAccount);
+        return newAccount;
+    }
+
+    Account& createCheckingAccount(const string& customerId, double initialBalance, double overdraftLimit) {
+        Customer customer = getCustomer(customerId);
+        if (customer == Customer::getInvalidCustomer()) {
+            DataManager::getInstance().logEvent(
+                DataLogEntry::LogLevel::ERROR,
+                "Failed to create CheckingAccount: Customer " + customerId + " not found."
+            );
+            throw runtime_error("Customer not found");
+        }
+        CheckingAccount newAccount = CheckingAccount(customerId, initialBalance, overdraftLimit);
+        customer.addAccount((Account*) &newAccount);
+        return newAccount;
+    }
+
+    Account* getAccount(const string& accountNumber) const {
+        for (Customer cust : customers_) {
+            Account* acct = cust.getAccount(accountNumber);
+            if (acct != nullptr) {
+                if (acct->getAccountNumber() == accountNumber) {
+                    return acct;
+                }
+            }
+        }
+        return nullptr;
+    }
+
+    vector<Account*> getAllAccounts() const {
+        vector<Account*> allAccounts;
+        for (Customer cust : customers_) {
+            for (Account* acct : cust.getAccounts()) {
+                allAccounts.push_back(acct);
+            }
+        }
+        return allAccounts;
+    }
+
+    // --- Transaction Processing ---
+    bool transferFunds(const string& fromAccountNum, const string& toAccountNum, double amount, const string& description) {
+        if (amount <= 0) {
+            DataManager::getInstance().logEvent(
+                DataLogEntry::LogLevel::WARNING,
+                "Transfer failed: Invalid amount $" + to_string(amount)
+            );
+            return false;
+        }
+
+        Account* fromAccount = getAccount(fromAccountNum);
+        Account* toAccount = getAccount(toAccountNum);
+
+        if (*fromAccount == InvalidAccount::getInstance()) {
+            DataManager::getInstance().logEvent(
+                DataLogEntry::LogLevel::ERROR,
+                "Transfer failed: Source account " + fromAccountNum + " not found."
+            );
+            return false;
+        }
+        if (*toAccount == InvalidAccount::getInstance()) {
+            DataManager::getInstance().logEvent(
+                DataLogEntry::LogLevel::ERROR,
+                "Transfer failed: Destination account " + toAccountNum + " not found."
+            );
+            return false;
+        }
+
+        if (fromAccount->withdraw(amount, "Transfer to " + toAccountNum + (description.empty() ? "" : ": " + description))) {
+            toAccount->deposit(amount, "Transfer from " + fromAccountNum + (description.empty() ? "" : ": " + description));
+            DataManager::getInstance().logEvent(
+                DataLogEntry::LogLevel::INFO,
+                "Successfully transferred $" + to_string(amount) + " from " + fromAccountNum + " to " + toAccountNum + (description.empty() ? "" : " (" + description + ")")
+            );
+            return true;
+        } else {
+            DataManager::getInstance().logEvent(
+                DataLogEntry::LogLevel::WARNING,
+                "Transfer failed between " + fromAccountNum + " and " + toAccountNum + " due to withdrawal issue."
+            );
+            return false; 
         }
     }
-    DataManager::getInstance().logEvent(
-        DataLogEntry::LogLevel::INFO,
-        "Monthly maintenance completed."
-    );
-}
+
+    // --- System Operations ---
+    void runMonthlyMaintenance() {
+        DataManager::getInstance().logEvent(
+            DataLogEntry::LogLevel::INFO,
+            "Starting monthly maintenance for all accounts..."
+        );
+        for (Customer cust : customers_) {
+            for (Account* acct : cust.getAccounts()) {
+                acct->performMonthlyMaintenance();
+            }
+        }
+        DataManager::getInstance().logEvent(
+            DataLogEntry::LogLevel::INFO,
+            "Monthly maintenance completed."
+        );
+    }
+
+private:
+    string name_;
+    vector<Customer> customers_; // Bank owns its customers
+};

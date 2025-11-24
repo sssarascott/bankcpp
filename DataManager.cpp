@@ -1,28 +1,32 @@
-#include "DataManager.hpp"
 #include <iostream>
+#include "DataLogEntry.cpp"
+#include <vector>
+#include <string>
+using namespace std;
 
-DataManager::DataManager() {
-    // Constructor logic, if any
-}
+// DataManager will be a Singleton to ensure consistent logging
+class DataManager {
+    private:
+        vector<DataLogEntry> logs_;
+        DataManager() {}
 
-DataManager& DataManager::getInstance() {
-    static DataManager instance; // Guaranteed to be destroyed, instantiated on first use.
-    return instance;
-}
+    public:
+        static DataManager& getInstance() {
+            static DataManager instance; // Guaranteed to be destroyed, instantiated on first use.
+            return instance;
+        }
 
-void DataManager::logEvent(DataLogEntry::LogLevel level, const std::string& description) {
-    //std::lock_guard<std::mutex> lock(mtx_); // Ensure thread-safe access
-    logs_.emplace_back(level, description);
-    // Optionally print to console for immediate feedback
-    std::cout << "LOG: " << logs_.back() << std::endl;
-}
+        void logEvent(DataLogEntry::LogLevel level, const string& description) {
+            logs_.emplace_back(level, description);
+            // Optionally print to console for immediate feedback
+            cout << "LOG: " << logs_.back() << endl;
+        }
 
-std::vector<DataLogEntry> DataManager::getAllLogs() const {
-    //std::lock_guard<std::mutex> lock(mtx_); // Ensure thread-safe access
-    return logs_; // Returns a copy of the logs
-}
+        vector<DataLogEntry> getAllLogs() const {
+            return logs_; // Returns a copy of the logs
+        }
 
-void DataManager::clearLogs() {
-    // std::lock_guard<std::mutex> lock(mtx_); // Ensure thread-safe access
-    logs_.clear();
-}
+        void clearLogs() {
+            logs_.clear();
+        }
+};

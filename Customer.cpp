@@ -1,77 +1,113 @@
-#include "Customer.hpp"
-#include "DataManager.hpp" // For logging
 #include <chrono> // For timestamp
-#include <ctime>   // For std::time_t
+#include <ctime>   // For time_t
 #include <map>
 #include <iomanip>
 #include <iostream>
+#include <string>
+#include <vector>
+#include <atomic> // For unique ID generation
+#include <ostream> // For ostream
+#include "DataManager.cpp" // For logging
+#include "Account.cpp" // For Account class
+#include "InvalidAccount.cpp" // For InvalidAccount singleton
+using namespace std;
 
-// Initialize the static atomic counter
-std::atomic<long long> Customer::nextCustomerId(10000); // Start customer IDs from 10000
+class Customer {
 
-Customer::Customer(const std::string& name, const std::string& address, const std::string& phone)
-    : customerId_("CUS" + std::to_string(nextCustomerId++)),
-      name_(name),
-      address_(address),
-      phone_(phone) {
-    DataManager::getInstance().logEvent(
-        DataLogEntry::LogLevel::INFO,
-        "Customer created: " + customerId_ + " (" + name_ + ")"
-    );
-}
+public:
+    static Customer& getInvalidCustomer() {
+        static Customer instance = Customer("-99999", "Invalid", "Invalid", "Invalid"); // Guaranteed to be destroyed, instantiated on first use.
+        return instance;
+    }
 
-std::string Customer::getCustomerId() const {
-    return customerId_;
-}
-
-const std::string& Customer::getName() const {
-    return name_;
-}
-
-const std::string& Customer::getAddress() const {
-    return address_;
-}
-
-const std::string& Customer::getPhone() const {
-    return phone_;
-}
-
-void Customer::addAccount(std::unique_ptr<Account> account) {
-    if (account) {
+    Customer(const string& name, const string& address, const string& phone)
+        : customerId_("CUS" + to_string(nextCustomerId++)),
+        name_(name),
+        address_(address),
+        phone_(phone) {
         DataManager::getInstance().logEvent(
             DataLogEntry::LogLevel::INFO,
-            "Account " + account->getAccountNumber() + " added to customer " + customerId_
-        );
-        accounts_.push_back(std::move(account)); // Transfer ownership
-    } else {
-        DataManager::getInstance().logEvent(
-            DataLogEntry::LogLevel::WARNING,
-            "Attempted to add a null account to customer " + customerId_
+            "Customer created: " + customerId_ + " (" + name_ + ")"
         );
     }
-}
 
-const std::vector<std::unique_ptr<Account>>& Customer::getAccounts() const {
-    return accounts_; 
-}
+    string getCustomerId() const {
+        return customerId_;
+    }
 
-Account* Customer::getAccount(const std::string& accountNumber) const {
-    for (const auto& acc : accounts_) {
-        if (acc->getAccountNumber() == accountNumber) {
-            return acc.get(); // Return raw pointer to the account
+    const string& getName() const {
+        return name_;
+    }
+
+    const string& getAddress() const {
+        return address_;
+    }
+
+    const string& getPhone() const {
+        return phone_;
+    }
+
+    void addAccount(Account* account) {
+        if (*account == InvalidAccount::getInstance()) {
+            DataManager::getInstance().logEvent(
+                DataLogEntry::LogLevel::INFO,
+                "Account " + account->getAccountNumber() + " added to customer " + customerId_
+            );
+            accounts_.push_back(account); // Transfer ownership
+        } else {
+            DataManager::getInstance().logEvent(
+                DataLogEntry::LogLevel::WARNING,
+                "Attempted to add a null account to customer " + customerId_
+            );
         }
     }
-    return nullptr; // Account not found
-}
 
-std::ostream& operator<<(std::ostream& os, const Customer& customer) {
-    os << "Customer ID: " << customer.getCustomerId() << "\n"
-       << "  Name: " << customer.getName() << "\n"
-       << "  Address: " << customer.getAddress() << "\n"
-       << "  Phone: " << customer.getPhone() << "\n"
-       << "  Accounts (" << customer.getAccounts().size() << "): \n";
-    for (const auto& acc : customer.getAccounts()) {
-        os << "    - " << acc->getAccountNumber() << " (Balance: $" << std::fixed << std::setprecision(2) << acc->getBalance() << ")\n";
+    const vector<Account*> getAccounts() const {
+        return accounts_; 
     }
-    return os;
-}
+
+    Account* getAccount(const string& accountNumber) const {
+        for (Account* acct : accounts_) {
+            if (acct->getAccountNumber() == accountNumber) {
+                return acct; // Return raw pointer to the account
+            }
+        }
+        return (Account*) &(InvalidAccount::getInstance()); // Return InvalidAccount singleton if not found
+    }
+
+
+    // Overload stream insertion operator for easy printing
+    friend ostream& operator<<(ostream& os, const Customer& customer) {
+        os << "Customer ID: " << customer.getCustomerId() << "\n"
+        << "  Name: " << customer.getName() << "\n"
+        << "  Address: " << customer.getAddress() << "\n"
+        << "  Phone: " << customer.getPhone() << "\n"
+        << "  Accounts (" << customer.getAccounts().size() << "): \n";
+        for (Account* acc : customer.getAccounts()) {
+            os << "    - " << acc->getAccountNumber() << " (Balance: $" << fixed << setprecision(2) << acc->getBalance() << ")\n";
+        }
+        return os;
+    }
+
+    bool operator == (const Customer& cust) const {
+        return this->customerId_._Equal(cust.getCustomerId());
+    }
+
+private:
+    static int nextCustomerId;
+    string customerId_;
+    string name_;
+    string address_;
+    string phone_;
+    vector<Account*> accounts_; // Customer owns their accounts
+
+    Customer(const string& customerID, const string& name, const string& address, const string& phone)
+        : customerId_(customerID),
+        name_(name),
+        address_(address),
+        phone_(phone) {}
+
+};
+
+// Initialize the static atomic counter
+int Customer::nextCustomerId(10000); // Start customer IDs from 10000

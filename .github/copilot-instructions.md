@@ -5,15 +5,15 @@ Purpose: provide focused, actionable guidance for AI coding agents working on th
 
 - **Big picture:** This is a small single-process banking simulation. Core responsibilities are split across:
   - `Bank` (in `Bank.hpp`/`Bank.cpp`): high-level orchestration — customer/account lifecycle, transfers, monthly maintenance.
-  - `Customer` (in `Customer.*`): owns accounts via `std::unique_ptr<Account>`; returns raw pointers for callers.
+  - `Customer` (in `Customer.*`): owns accounts via `unique_ptr<Account>`; returns raw pointers for callers.
   - `Account` and subclasses `SavingsAccount` / `CheckingAccount`: balance logic, `deposit`/`withdraw`, `performMonthlyMaintenance`.
   - `Transaction` (in `Transaction.*`): immutable record objects; operator<< implemented for log-friendly printing.
-  - `DataManager` (in `DataManager.*`) + `DataLogEntry`: process-wide singleton used for logging; keeps an in-memory `std::vector` and prints to console.
+  - `DataManager` (in `DataManager.*`) + `DataLogEntry`: process-wide singleton used for logging; keeps an in-memory `vector` and prints to console.
 
 - **Ownership & memory patterns:**
-  - `Customer` stores `std::vector<std::unique_ptr<Account>>` and transfers ownership via `addAccount(std::unique_ptr<Account>)`.
+  - `Customer` stores `vector<unique_ptr<Account>>` and transfers ownership via `addAccount(unique_ptr<Account>)`.
   - Many APIs return raw pointers (e.g., `Customer* Bank::getCustomer(...)`, `Account* Bank::getAccount(...)`). Do NOT `delete` those — ownership remains with the container.
-  - IDs are generated using `std::atomic` counters in `.cpp` files (see `Customer.cpp`, `Account.cpp`, `Transaction.cpp`). When adding new ID counters follow the same pattern and initial values (e.g., `Customer::nextCustomerId(10000)`).
+  - IDs are generated using `atomic` counters in `.cpp` files (see `Customer.cpp`, `Account.cpp`, `Transaction.cpp`). When adding new ID counters follow the same pattern and initial values (e.g., `Customer::nextCustomerId(10000)`).
 
 - **Logging & concurrency:**
   - Use `DataManager::getInstance().logEvent(...)` for all runtime events. `DataManager` already holds a mutex for thread-safety for logs.
@@ -41,7 +41,7 @@ Purpose: provide focused, actionable guidance for AI coding agents working on th
   - Logging on important events:
     DataManager::getInstance().logEvent(DataLogEntry::LogLevel::INFO, "Message");
   - Creating an account and handing ownership to a customer:
-    `auto a = std::make_unique<SavingsAccount>(customerId, bal, rate); customer->addAccount(std::move(a));`
+    `auto a = make_unique<SavingsAccount>(customerId, bal, rate); customer->addAccount(move(a));`
 
 - **Gotchas & checks for PRs:**
   - Ensure you do not return dangling pointers — keep ownership semantics consistent.

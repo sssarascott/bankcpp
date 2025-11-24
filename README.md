@@ -73,7 +73,7 @@ The modular design allows for future enhancements, such as integrating online ba
 
 This C++-based banking system is designed to provide a clear and maintainable framework for managing accounts, processing transactions, and logging system events. Its modular architecture and adherence to object-oriented principles make it a solid foundation for both academic projects and potential enterprise-level applications. Future improvements can further enhance the system's functionality and scalability, making it adaptable to evolving banking requirements.
 
-- Date.hpp/Date.cpp: Uses std::chrono for timestamps and std::put_time for formatting.
+- Date.hpp/Date.cpp: Uses chrono for timestamps and put_time for formatting.
 - DataLogEntry.hpp/DataLogEntry.cpp: Unique ID, timestamp, log level, description.
 - DataManager.hpp/DataManager.cpp: Implements Singleton, thread-safe logging.
 - Transaction.hpp/Transaction.cpp: Unique ID, type, amount, account number.
@@ -83,7 +83,7 @@ This C++-based banking system is designed to provide a clear and maintainable fr
 - Customer.hpp/Customer.cpp: Manages customer info and their accounts (using unique_ptr for ownership).
 - Bank.hpp/Bank.cpp: Central manager, handles customer/account creation, transfers, maintenance.
 
-The use of std::unique_ptr for managing Account objects within Customer and Customer objects within Bank correctly implements ownership and handles memory automatically, preventing leaks. The DataManager is a thread-safe singleton.
+The use of unique_ptr for managing Account objects within Customer and Customer objects within Bank correctly implements ownership and handles memory automatically, preventing leaks. The DataManager is a thread-safe singleton.
 
 **Compilation Instructions:**
 
