@@ -1,4 +1,5 @@
 #include <iostream>
+#include <ostream> // For ostream
 #include <limits> // For numeric_limits
 #include <iomanip> // For fixed, setprecision
 #include <vector>  // Ensure vector is included for clarity
@@ -23,36 +24,36 @@ int main() {
     printSeparator();
 
     // 2. Create Customers
-    Customer* cust1 = myBank.createCustomer("Alice Smith", "123 Main St", "555-1111");
-    Customer* cust2 = myBank.createCustomer("Bob Johnson", "456 Oak Ave", "555-2222");
-    Customer* cust3 = myBank.createCustomer("Charlie Brown", "789 Pine Ln", "555-3333");
+    Customer cust1 = myBank.createCustomer("Alice Smith", "123 Main St", "555-1111");
+    Customer cust2 = myBank.createCustomer("Bob Johnson", "456 Oak Ave", "555-2222");
+    Customer cust3 = myBank.createCustomer("Charlie Brown", "789 Pine Ln", "555-3333");
     printSeparator();
 
     // Verify customers were created
     cout << "Current Customers:\n";
-    if (cust1) cout << *cust1 << endl;
-    if (cust2) cout << *cust2 << endl;
-    if (cust3) cout << *cust3 << endl;
+    cout << cust1 << endl;
+    cout << cust2 << endl;
+    cout << cust3 << endl;
     printSeparator();
 
     // 3. Create Accounts for Customers
-    Account* aliceSavings = myBank.createSavingsAccount(cust1->getCustomerId(), 1000.00, 0.01); // 1% interest
-    Account* aliceChecking = myBank.createCheckingAccount(cust1->getCustomerId(), 500.00, 200.00); // $200 overdraft
+    Account aliceSavings = myBank.createSavingsAccount(cust1.getCustomerId(), 1000.00, 0.01); // 1% interest
+    Account aliceChecking = myBank.createCheckingAccount(cust1.getCustomerId(), 500.00, 200.00); // $200 overdraft
     
-    Account* bobChecking = myBank.createCheckingAccount(cust2->getCustomerId(), 2000.00, 500.00);
-    Account* bobSavings = myBank.createSavingsAccount(cust2->getCustomerId(), 5000.00, 0.015); // 1.5% interest
+    Account bobChecking = myBank.createCheckingAccount(cust2.getCustomerId(), 2000.00, 500.00);
+    Account bobSavings = myBank.createSavingsAccount(cust2.getCustomerId(), 5000.00, 0.015); // 1.5% interest
 
     // Charlie only has a checking account for now
-    Account* charlieChecking = myBank.createCheckingAccount(cust3->getCustomerId(), 100.00, 100.00);
+    Account charlieChecking = myBank.createCheckingAccount(cust3.getCustomerId(), 100.00, 100.00);
     printSeparator();
 
     // Display initial account states
     cout << "Initial Account States:\n";
-    if (aliceSavings) cout << *aliceSavings;
-    if (aliceChecking) cout << *aliceChecking;
-    if (bobChecking) cout << *bobChecking;
-    if (bobSavings) cout << *bobSavings;
-    if (charlieChecking) cout << *charlieChecking;
+    cout << aliceSavings;
+    cout << aliceChecking;
+    cout << bobChecking;
+    cout << bobSavings;
+    cout << charlieChecking;
     printSeparator();
 
     // 4. Perform Transactions
@@ -60,32 +61,32 @@ int main() {
     
     // Deposit to Alice's Savings
     cout << "Alice deposits $200 into Savings.\n";
-    if (aliceSavings && aliceSavings->deposit(200.00, "Cash deposit")) {
-        cout << "Alice's Savings Balance: $" << fixed << setprecision(2) << aliceSavings->getBalance() << "\n";
+    if (aliceSavings.deposit(200.00, "Cash deposit")) {
+        cout << "Alice's Savings Balance: $" << fixed << setprecision(2) << aliceSavings.getBalance() << "\n";
     }
     printSeparator();
 
     // Withdraw from Bob's Checking
     cout << "Bob withdraws $300 from Checking.\n";
-    if (bobChecking && bobChecking->withdraw(300.00, "ATM withdrawal")) {
-        cout << "Bob's Checking Balance: $" << fixed << setprecision(2) << bobChecking->getBalance() << "\n";
+    if (bobChecking.withdraw(300.00, "ATM withdrawal")) {
+        cout << "Bob's Checking Balance: $" << fixed << setprecision(2) << bobChecking.getBalance() << "\n";
     }
     printSeparator();
 
     // Attempt an overdraft withdrawal from Charlie's Checking
     cout << "Charlie attempts to withdraw $250 from Checking (balance $100, overdraft $100).\n";
-    if (charlieChecking && charlieChecking->withdraw(250.00, "Large purchase")) {
+    if (charlieChecking.withdraw(250.00, "Large purchase")) {
         // This should fail, so this block should not execute
-        cout << "Charlie's Checking Balance: $" << fixed << setprecision(2) << charlieChecking->getBalance() << "\n";
+        cout << "Charlie's Checking Balance: $" << fixed << setprecision(2) << charlieChecking.getBalance() << "\n";
     } else {
-        cout << "Charlie's withdrawal failed as expected. Current Balance: $" << fixed << setprecision(2) << charlieChecking->getBalance() << "\n";
+        cout << "Charlie's withdrawal failed as expected. Current Balance: $" << fixed << setprecision(2) << charlieChecking.getBalance() << "\n";
     }
     printSeparator();
 
     // Successful overdraft withdrawal from Charlie's Checking
     cout << "Charlie attempts to withdraw $150 from Checking (balance $100, overdraft $100 -> total $200 available).\n";
-    if (charlieChecking && charlieChecking->withdraw(150.00, "Small purchase")) {
-        cout << "Charlie's Checking Balance: $" << fixed << setprecision(2) << charlieChecking->getBalance() << "\n";
+    if (charlieChecking.withdraw(150.00, "Small purchase")) {
+        cout << "Charlie's Checking Balance: $" << fixed << setprecision(2) << charlieChecking.getBalance() << "\n";
     } else {
         cout << "Charlie's withdrawal failed.\n"; // This should not happen now
     }
@@ -93,9 +94,9 @@ int main() {
 
     // Transfer funds between accounts
     cout << "Transferring $150 from Bob's Checking to Alice's Checking.\n";
-    if (myBank.transferFunds(bobChecking->getAccountNumber(), aliceChecking->getAccountNumber(), 150.00, "Gift")) {
-        cout << "Bob's Checking Balance: $" << fixed << setprecision(2) << bobChecking->getBalance() << "\n";
-        cout << "Alice's Checking Balance: $" << fixed << setprecision(2) << aliceChecking->getBalance() << "\n";
+    if (myBank.transferFunds(bobChecking.getAccountNumber(), aliceChecking.getAccountNumber(), 150.00, "Gift")) {
+        cout << "Bob's Checking Balance: $" << fixed << setprecision(2) << bobChecking.getBalance() << "\n";
+        cout << "Alice's Checking Balance: $" << fixed << setprecision(2) << aliceChecking.getBalance() << "\n";
     } else {
         cout << "Transfer failed.\n";
     }
@@ -109,29 +110,25 @@ int main() {
     printSeparator();
 
     cout << "Account Balances after Monthly Maintenance (Interest Applied, etc.):\n";
-    if (aliceSavings) cout << *aliceSavings;
-    if (aliceChecking) cout << *aliceChecking;
-    if (bobChecking) cout << *bobChecking;
-    if (bobSavings) cout << *bobSavings;
-    if (charlieChecking) cout << *charlieChecking;
+    cout << aliceSavings;
+    cout << aliceChecking;
+    cout << bobChecking;
+    cout << bobSavings;
+    cout << charlieChecking;
     printSeparator();
 
     // 6. Display Transaction Histories
     cout << "--- Transaction Histories ---\n";
-    if (aliceSavings) {
-        cout << "Alice's Savings Account (" << aliceSavings->getAccountNumber() << ") Transactions:\n";
-        vector<Transaction> transactionHistory = aliceSavings->getTransactionHistory();
-        for (size_t i = 0; i < transactionHistory.size(); ++i) {
-            cout << "  " << transactionHistory[i] << "\n";
-        }
+    cout << "Alice's Savings Account (" << aliceSavings.getAccountNumber() << ") Transactions:\n";
+    vector<Transaction> transactionHistory = aliceSavings.getTransactionHistory();
+    for (size_t i = 0; i < transactionHistory.size(); ++i) {
+        cout << "  " << transactionHistory[i] << "\n";
     }
     printSeparator();
 
-    if (bobChecking) {
-        cout << "Bob's Checking Account (" << bobChecking->getAccountNumber() << ") Transactions:\n";
-        for (const auto& trx : bobChecking->getTransactionHistory()) {
-            cout << "  " << trx << "\n";
-        }
+    cout << "Bob's Checking Account (" << bobChecking.getAccountNumber() << ") Transactions:\n";
+    for (const auto& trx : bobChecking.getTransactionHistory()) {
+        cout << "  " << trx << "\n";
     }
     printSeparator();
     
